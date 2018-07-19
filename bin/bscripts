@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const assert = require('assert');
+const bdb = require('bdb');
+const bcoin = require('bcoin');
+const Logger = require('blgr');
+
+const {argv} = process;
+const logger = new Logger({
+  level: 'debug'
+});
+
+if (argv.length < 5) {
+  console.error('Usage: bscripts [prefix] [network?] [cmd]');
+  console.error('cmd: getversion - get version');
+  console.error('cmd: setversion [version] - set version');
+  process.exit(1);
+  return;
+}
+
+const chain = new bcoin.Chain({
+  memory: false,
+  location: argv[2],
+  network: argv[3]
+});
+
+const name = 'chain';
+
+function versionError(name) {
+  return `Database version mismatch for database: "${name}".`
+    + ' Please run a data migration before opening.';
+}
+
+async function getVersion(db) {
+  const data = await db.get(bdb.key('V').build());
+  if (data.length !== name.length + 4)
+    throw new Error(versionError(name));
+
+  if (data.toString('ascii', 0, name.length) !== name)
+    throw new Error(versionError(name));
+
+  const version = data.readUInt32LE(name.length);
+
+  console.log('Chain version=%d', version);
+}
+
+async function setVersion(db, version) {
+  assert(Number.isInteger(version));
+  assert(version > 0);
+
+  const key = bdb.key('V').build();
+  const value = Buffer.allocUnsafe(name.length + 4);
+  value.write(name, 0, 'ascii');
+  value.writeUInt32LE(version, name.length);
+  return db.put(key, value);
+}
+
+(async () => {
+  await logger.open();
+  const db = chain.db.db;
+  await db.open();
+
+  switch (argv[4]) {
+    case 'getversion':
+      await getVersion(db);
+      break;
+
+    case 'setversion':
+      await setVersion(db, parseInt(argv[5]));
+      await getVersion(db);
+      break;
+
+    default:
+      break;
+  }
+
+  await db.close();
+  await logger.close();
+})();

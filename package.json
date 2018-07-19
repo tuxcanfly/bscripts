@@ -1,0 +1,28 @@
+{
+  "name": "bscripts",
+  "version": "1.0.0",
+  "description": "bcoin scripts bikeshed",
+  "main": "index.js",
+  "dependencies": {
+    "bcoin": "^1.0.2",
+    "bdb": "^0.2.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tuxcanfly/bscripts.git"
+  },
+  "keywords": [
+    "bcoin",
+    "scripts"
+  ],
+  "author": "Javed Khan <tuxcanfly@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tuxcanfly/bscripts/issues"
+  },
+  "homepage": "https://github.com/tuxcanfly/bscripts#readme"
+}
